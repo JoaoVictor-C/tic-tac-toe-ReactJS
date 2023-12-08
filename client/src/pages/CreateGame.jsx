@@ -29,14 +29,15 @@ export default class CreateGame extends Component {
     }
 
     onNameChange = (name) => {
-        this.setState({ name });
+        this.setState({ name: name });
     }
     
     joinParty = () => {
         const bind = this
-        const socket = io(`${baseUrl}/${this.state.roomCode}`);
-        this.setState({ socket });
-        console.log("socket created")
+        const socket = io(`${baseUrl}/${this.state.roomCode}`)
+        this.setState({ socket: socket });
+        console.log(this.state.name)
+        console.log("joining room " + this.state.roomCode)
         socket.emit('setName', this.state.name);
         
         socket.on("joinSuccess", function() {
@@ -50,20 +51,6 @@ export default class CreateGame extends Component {
         socket.on("joinFailed", function(err) {
             console.log("join failed, cause: " + err);
             bind.setState({ isLoading: false });
-        })
-
-        socket.on("leader", function() {
-            console.log("You are the leader")
-        })
-
-        socket.on('partyUpdate', (players) => {
-            console.log(players)
-            this.setState({ players })
-            if(players.length >= 2 && players.map(x => x.isReady).filter(x => x === true).length === players.length) { //TODO CHANGE 2 BACK TO 3
-                this.setState({ canStart: true })
-            } else {
-                this.setState({ canStart: false })
-            }
         })
 
         socket.on('disconnected', function() {
@@ -85,8 +72,10 @@ export default class CreateGame extends Component {
         axios.get(`${baseUrl}/createRoom`)
             .then(function (res) {
                 console.log(res);
-                bind.setState({ roomCode: res.data.room, errorMsg: '' });
-                bind.joinParty();
+                console.log(`room ${res.data.room} created`)
+                bind.setState({ roomCode: res.data.room, errorMsg: '' }, () => {
+                    bind.joinParty();
+                });
             })
             .catch(function (err) {
                 //TODO  handle error

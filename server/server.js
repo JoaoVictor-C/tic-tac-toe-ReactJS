@@ -1,11 +1,17 @@
 const express = require('express');
-const moment = require('moment');
 const app = express();
+
 const cors = require('cors');
-const { connect } = require('http2');
 app.use(cors());
+
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const socketio = require('socket.io')
+
+const io = socketio(server, {
+    cors: {
+        origin: '*',
+    }
+});
 
 const port = 3000 || process.env.PORT;
 
@@ -13,7 +19,7 @@ const TicTacToe = require('./game/tictactoe.js');
 
 let rooms = {};
 
-const generateRoom = (length = 2) => {
+const generateRoom = (length = 4) => {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const charactersLength = characters.length;
@@ -134,17 +140,13 @@ openSocket = (gameSocket, room) => {
         })
     });
     let checkEmptyInterval = setInterval(() => {
-        // console.log(Object.keys(rooms))
-        if(Object.keys(gameSocket['sockets']).length == 0) {
+        if(Object.keys(gameSocket['sockets']).length === 0) {
+            console.log('room ' + room + ' has been deleted');
             delete io.nsps[room];
-            if(rooms[room] != null) {
-                delete rooms[room.substring(1)]
-            }
-            clearInterval(checkEmptyInterval)
-            console.log(room 
-                + 'deleted')
+            delete rooms[room.substring(1)]
+            clearInterval(checkEmptyInterval);
         }
-    }, 10000)
+    }, 10000);
 }
 
 startGame = (players, gameSocket, room) => {
