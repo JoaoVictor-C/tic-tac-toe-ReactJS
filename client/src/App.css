@@ -208,6 +208,26 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.roomCodeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.RoomCode {
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: 1px solid #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+}
+
 .joinGameContainer {
   display: flex;
   flex-direction: column;
@@ -236,6 +256,38 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.readyUnitContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.readyUnit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: 0.5rem;
+  transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
+}
+
+.playersContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 1rem;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  margin-top: 1rem;
+}
+
 .btn {
   font-size: 1.2rem;
   padding: 0.5rem 1rem;
@@ -257,8 +309,61 @@ body {
   transform: scale(0.98);
 }
 
+.backButton {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: 1px solid #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
 .pulse {
   animation: pulse 1s infinite;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.game h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.game h2 {
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.game h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.roomCode {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  border: 1px solid #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  margin: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 @keyframes pulse {

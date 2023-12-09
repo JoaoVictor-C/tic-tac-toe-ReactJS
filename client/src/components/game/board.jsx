@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 const Square = ({ value, onClick }) => {
     return (
         <button className="square" onClick={onClick}>
@@ -6,26 +8,36 @@ const Square = ({ value, onClick }) => {
     )
 }
 
-const board = ({ squares, chooseSquare }) => {
+Square.propTypes = {
+    value: PropTypes.string,
+    onClick: PropTypes.func.isRequired
+};
+
+const Board = ({ squares, onClick }) => {
     return (
         <>
             <div className="board-row first-row">
-                <Square value={squares[0]} onClick={() => chooseSquare(0)} />
-                <Square value={squares[1]} onClick={() => chooseSquare(1)} />
-                <Square value={squares[2]} onClick={() => chooseSquare(2)} />
+                <Square value={squares[0]} onClick={() => onClick(0)} />
+                <Square value={squares[1]} onClick={() => onClick(1)} />
+                <Square value={squares[2]} onClick={() => onClick(2)} />
             </div>
             <div className="board-row second-row">
-                <Square value={squares[3]} onClick={() => chooseSquare(3)} />
-                <Square value={squares[4]} onClick={() => chooseSquare(4)} />
-                <Square value={squares[5]} onClick={() => chooseSquare(5)} />
+                <Square value={squares[3]} onClick={() => onClick(3)} />
+                <Square value={squares[4]} onClick={() => onClick(4)} />
+                <Square value={squares[5]} onClick={() => onClick(5)} />
             </div>
             <div className="board-row">
-                <Square value={squares[6]} onClick={() => chooseSquare(6)} />
-                <Square value={squares[7]} onClick={() => chooseSquare(7)} />
-                <Square value={squares[8]} onClick={() => chooseSquare(8)} />
+                <Square value={squares[6]} onClick={() => onClick(6)} />
+                <Square value={squares[7]} onClick={() => onClick(7)} />
+                <Square value={squares[8]} onClick={() => onClick(8)} />
             </div>
         </>
     )
 }
 
-export default board
+Board.propTypes = {
+    squares: PropTypes.array.isRequired,
+    onClick: PropTypes.func.isRequired
+};
+
+export default Board

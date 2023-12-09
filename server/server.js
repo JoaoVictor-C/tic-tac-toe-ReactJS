@@ -1,12 +1,11 @@
 const express = require('express');
 const app = express();
 
-const cors = require('cors');
-app.use(cors());
-
 const server = require('http').createServer(app);
 const socketio = require('socket.io')
 
+const cors = require('cors');
+app.use(cors());
 const io = socketio(server, {
     cors: {
         origin: '*',
@@ -15,7 +14,7 @@ const io = socketio(server, {
 
 const port = 3000 || process.env.PORT;
 
-const TicTacToe = require('./game/tictactoe.js');
+const gameUtils = require("./game/utils")
 
 let rooms = {};
 
@@ -37,8 +36,11 @@ app.get('/createRoom', function (req, res) {
     }
     const newSocket = io.of(`/${newRoom}`);
     openSocket(newSocket, `/${newRoom}`);
-    rooms[newRoom] = null;
-    console.log(newRoom + " CREATED")
+    rooms[newRoom] = {
+        name: newRoom,
+        socket: newSocket
+    }
+    console.log(`room ${rooms[newRoom].name} has been created`);
     res.json({room: newRoom});
 })
 
@@ -52,30 +54,25 @@ openSocket = (gameSocket, room) => {
     let partyMembers = []; //actual members
     let partyLeader = ''
     let started = false;
-
+    let board = null;
+    let winner = null;
+    let gameOver = null;
+    let moves = null;
+    let turn = null;
+    let playersSymbols = null;
     gameSocket.on('connection', (socket) => {
-        console.log('id: ' + socket.id);
-        players.push({
-            "player": '',
-            "socket_id": `${socket.id}`,
-            "isReady": false
-        })
-        console.log(`player ${players.length} has connected`);
-        socket.join(socket.id);
-        console.log('socket joined ' + socket.id);
-        const index = players.length-1;
+        console.log('connected: ' + socket.id);
+        players.push({player: '', socket_id: socket.id, isReady: false});
+        let index = players.length - 1;
+        console.log(players[index]);
 
         const updatePartyList = () => {
             partyMembers = players.map(x => {
                 return {name: x.player, socketID: x.socket_id, isReady: x.isReady}
             }).filter(x => x.name != '')
-            console.log(partyMembers);
-            gameSocket.emit('partyUpdate', partyMembers) ;
+            console.log(`party members: ${JSON.stringify(partyMembers)}`);
+            gameSocket.emit('partyUpdate', partyMembers);
         }
-
-        // socket.on('g-actionDecision', (action) => {
-        //     rooms[room].onChooseAction(action);
-        // })
 
         socket.on('setName', (name) => { //when client joins, it will immediately set its name
             console.log(started)
@@ -84,7 +81,7 @@ openSocket = (gameSocket, room) => {
                 return
             }
             if(!players.map(x => x.player).includes(name)){
-                if(partyMembers.length >= 6) {
+                if(partyMembers.length >= 2) {
                     gameSocket.to(players[index].socket_id).emit("joinFailed", 'party_full');
                 } else {
                     if(partyMembers.length == 0) {
@@ -108,14 +105,151 @@ openSocket = (gameSocket, room) => {
             players[index].isReady = isReady;
             updatePartyList();
             gameSocket.to(players[index].socket_id).emit("readyConfirm");
+            if(partyMembers.every(x => x.isReady)) {
+                gameSocket.to(partyLeader).emit("allReady");
+            }
         })
 
         socket.on('startGameSignal', (players) => {
             started = true;
             gameSocket.emit('startGame');
-            startGame(players, gameSocket, room);
+            start();
         })
+
+        
+        socket.on('move', (data) => {
+            if (data.player === turn && !gameOver) {
+                if (board[data.index] === null) {
+                    console.log(data);
+                    console.log(playersSymbols)
+                    if (playersSymbols[0].name === data.player) { 
+                        board[data.index] = playersSymbols[0].symbol 
+                    } else { 
+                        board[data.index] = playersSymbols[1].symbol 
+                    };
+                    moves++;
+                    
+                    checkWinner();
+                    changeTurn();
+
+                    gameSocket.emit('move', {
+                        "board": board,
+                        "turn": turn,
+                        "winner": winner,
+                        "gameOver": gameOver,
+                        "moves": moves,
+                        "players": players
+                    });
+                }
+            }
+        });
+
+        socket.on('disconnect', () => {
+            gameSocket.emit('gameOver', {
+                "board": board,
+                "turn": turn,
+                "winner": winner,
+                "gameOver": gameOver,
+                "moves": moves,
+                "players": players
+            });
+        });
+
+        socket.on('reset', () => {
+            board = Array(9).fill(null);
+            turn = gameUtils.randomPlayer();
+            winner = '';
+            gameOver = false;
+            moves = 0;
+            gameSocket.emit('gameStart', {
+                "board": board,
+                "turn": turn,
+                "winner": winner,
+                "gameOver": gameOver,
+                "moves": moves,
+                "players": players
+            });
+        });
     
+        const changeTurn = () => {
+            console.log(turn);
+            if (turn === players[0].player) {
+                console.log(`${players[0].player} is now ${players[1].player}`)
+                turn = players[1].player;
+            } else {
+                console.log(`${players[1].player} is now ${players[0].player}`)
+                turn = players[0].player;
+            }
+            console.log(turn);
+        };
+    
+        const checkWinner = () => {
+            const winningCombos = [
+                [0, 1, 2], // top row
+                [3, 4, 5], // middle row
+                [6, 7, 8], // bottom row
+                [0, 3, 6], // left column
+                [1, 4, 7], // middle column
+                [2, 5, 8], // right column
+                [0, 4, 8], // left diagonal
+                [2, 4, 6] // right diagonal
+            ];
+    
+            winningCombos.forEach((combo) => {
+                const board1 = board[combo[0]];
+                const board2 = board[combo[1]];
+                const board3 = board[combo[2]];
+    
+                if (board1 && board1 === board2 && board1 === board3) {
+                    winner = board1;
+                    gameOver = true;
+                }
+            });
+    
+            if (moves === 9) {
+                gameOver = true;
+            }
+    
+            if (gameOver) {
+                gameSocket.emit('gameOver', {
+                    "board": board,
+                    "turn": turn,
+                    "winner": winner,
+                    "gameOver": gameOver,
+                    "moves": moves,
+                    "players": players
+                });
+            }
+        };
+    
+        const reset = () => {
+            board = Array(9).fill(null);
+            turn = gameUtils.randomPlayer();
+            winner = '';
+            gameOver = false;
+            moves = 0;
+        };
+    
+        const start = () => {
+            board = Array(9).fill(null);
+            winner = '';
+            gameOver = false;
+            moves = 0;
+            turn = gameUtils.randomPlayer(players.map(x => x.player));
+            playersSymbols = gameUtils.buildPlayersSymbols(players);
+            console.log(turn)
+            console.log(playersSymbols)
+            gameSocket.emit('gameStart', {
+                "board": board,
+                "turn": turn,
+                "winner": winner,
+                "gameOver": gameOver,
+                "moves": moves,
+                "players": players,
+                "playersSymbols": playersSymbols
+            });
+        };
+        
         socket.on('disconnect', () => {
             console.log('disconnected: ' + socket.id);
             players.map((x,index) => {
@@ -125,33 +259,28 @@ openSocket = (gameSocket, room) => {
                     gameSocket.emit('g-addLog', 'Sorry for the inconvenience (シ_ _)シ');
                     players[index].player ='';
                     if(socket.id === partyLeader) {
-                        console.log('Leader has disconnected');
-                        gameSocket.emit('leaderDisconnect', 'leader_disconnected');
-                        socket.removeAllListeners();
-                        delete io.nsps[room];
-                        delete rooms[room.substring(1)]
-                        players = [];
-                        partyMembers = []
+                        console.log('leader disconnected');
+                        if(partyMembers.length > 0) {
+                            partyLeader = partyMembers[0].socketID;
+                            gameSocket.to(partyLeader).emit("leader");
+                            console.log("PARTY LEADER IS: " + partyLeader);
+                        }
                     }
                 }
             })
             console.log(Object.keys(gameSocket['sockets']).length)
             updatePartyList();
         })
+
     });
     let checkEmptyInterval = setInterval(() => {
-        if(Object.keys(gameSocket['sockets']).length === 0) {
-            console.log('room ' + room + ' has been deleted');
-            delete io.nsps[room];
-            delete rooms[room.substring(1)]
+        if(partyMembers.length == 0) {
+            console.log('party empty');
             clearInterval(checkEmptyInterval);
+            delete rooms[room.substring(1)];
+            gameSocket.emit('partyEmpty');
         }
     }, 10000);
-}
-
-startGame = (players, gameSocket, room) => {
-    rooms[room.substring(1)] = new TicTacToe(players, gameSocket);
-    rooms[room.substring(1)].start();
 }
 
 server.listen(port, () => {

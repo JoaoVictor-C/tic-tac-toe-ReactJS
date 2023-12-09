@@ -36,7 +36,6 @@ export default class CreateGame extends Component {
         const bind = this
         const socket = io(`${baseUrl}/${this.state.roomCode}`)
         this.setState({ socket: socket });
-        console.log(this.state.name)
         console.log("joining room " + this.state.roomCode)
         socket.emit('setName', this.state.name);
         
@@ -56,6 +55,16 @@ export default class CreateGame extends Component {
         socket.on('disconnected', function() {
             console.log("You've lost connection with the server")
         });
+
+        socket.on('partyUpdate', (players) => {
+            console.log(`party update: ${players}`)
+            this.setState({ players })
+            if(players.length >= 2 && players.map(x => x.isReady).filter(x => x === true).length === players.length) {
+                this.setState({ canStart: true })
+            } else {
+                this.setState({ canStart: false })
+            }
+        })
     }
 
     createParty = () => {
@@ -104,6 +113,7 @@ export default class CreateGame extends Component {
         this.setState({copied: true})
     }
 
+
     render() {
         if(this.state.isGameStarted) {
             return (<Game socket={this.state.socket} players={this.state.players} name={this.state.name} roomCode={this.state.roomCode}/>)
@@ -112,10 +122,9 @@ export default class CreateGame extends Component {
         let roomCode = null;
         let startGame = null;
         let createButton = null;
-        let youCanSort = null;
         if(!this.state.isInRoom) {
             createButton = <>
-            <button className="createButton btn" onClick={this.createParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Creating...': 'Create'}</button>
+            <button className={`createButton btn ${this.state.isLoading ? "pulse" : ""}`} onClick={this.createParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Creating...': 'Create'}</button>
             <br></br>
             </>
         }
@@ -123,10 +132,13 @@ export default class CreateGame extends Component {
             error = <b>{this.state.errorMsg}</b>
         }
         if(this.state.roomCode !== '' && !this.state.isLoading) {
-            youCanSort = <p>You can drag to re-arrange the players in a specific turn order!</p>
-            roomCode = <div>
-                    <p>ROOM CODE: <br></br> <br></br><b className="RoomCode" onClick={this.copyCode}>{this.state.roomCode} <span className="iconify" data-icon="typcn-clipboard" data-inline="true"></span></b></p>
-                    {this.state.copied ? <p>Copied to clipboard</p> : null}
+            roomCode = <div className="roomCodeContainer">
+                    <p>ROOM CODE:
+                        <b className="RoomCode btn" onClick={this.copyCode}>{this.state.roomCode} 
+                            <span className="iconify" data-icon="typcn-clipboard" data-inline="true"></span>
+                        </b>
+                    </p>
+                    {this.state.copied ? <p><br></br>Copied to clipboard</p> : null}
                 </div>
         }
         if(this.state.canStart) {
@@ -155,10 +167,11 @@ export default class CreateGame extends Component {
                 />
                 <br></br>
                 {createButton}
+                <a href="/"><button className="backButton btn">Voltar</button></a>
                 {error}
                 <br></br>
                 {roomCode}
-                {youCanSort}
+                <br></br>
                 <div className="readyUnitContainer">
                     <ReactSortable list={this.state.players} setList={newState => this.setState({ players: newState })}>
                         {this.state.players.map((item,index) => {
@@ -179,7 +192,7 @@ export default class CreateGame extends Component {
                         }
                     </ReactSortable>
                 </div>
-                
+                <br></br>
                 {startGame}
             </div>
                 

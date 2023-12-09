@@ -100,7 +100,7 @@ function App() {
         <h1>Jogo da velha offline</h1>
       </header>
       <div className="board">
-        <Board squares={board} chooseSquare={chooseSquare} />
+        <Board squares={board} onClick={chooseSquare} />
       </div>
 
         <div className="status">

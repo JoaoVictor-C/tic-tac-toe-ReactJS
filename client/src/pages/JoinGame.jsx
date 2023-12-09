@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import io from "socket.io-client";
 import Game from '../components/Game';
 import axios from 'axios';
@@ -59,7 +59,6 @@ export default class JoinGame extends Component {
         })
 
         socket.on('partyUpdate', (players) => {
-            console.log(players)
             this.setState({ players })
             if(players.length >= 3 && players.map(x => x.isReady).filter(x => x === true).length === players.length) { //TODO CHANGE 2 BACK TO 3
                 this.setState({ canStart: true })
@@ -135,7 +134,7 @@ export default class JoinGame extends Component {
 
     render() {
         if(this.state.isGameStarted) {
-            return (<Game socket={this.state.socket} name={this.state.name} roomCode={this.state.roomCode} players={this.state.players}/>)
+            return (<Game socket={this.state.socket} players={this.state.players} name={this.state.name} roomCode={this.state.roomCode}/>)
         }
         let error = null;
         let joinReady = null;
@@ -146,7 +145,7 @@ export default class JoinGame extends Component {
         if(this.state.isInRoom) {
             joinReady = <button className="joinButton btn" onClick={this.reportReady} disabled={this.state.isReady}>Ready</button>
         } else {
-            joinReady = <button className="joinButton btn" onClick={this.attemptJoinParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Joining...': 'Join'}</button>
+            joinReady = <button className={`joinButton btn ${this.state.isLoading ? "pulse" : ""}`} onClick={this.attemptJoinParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Joining...': 'Join'}</button>
         }
         if(this.state.isReady) {
             ready = <b style={{ color: '#5FC15F' }}>You are ready!</b>
@@ -184,6 +183,7 @@ export default class JoinGame extends Component {
                 {ready}
                 <br></br>
                 {error}
+                <a href="/"><button className="backButton btn">Voltar</button></a>
                 <div className="readyUnitContainer">
                         {this.state.players.map((item,index) => {
                             let ready = null
