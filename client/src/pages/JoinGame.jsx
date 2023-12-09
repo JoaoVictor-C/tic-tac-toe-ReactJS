@@ -35,17 +35,17 @@ export default class JoinGame extends Component {
         const bind = this
         const socket = io(`${baseUrl}/${this.state.roomCode}`);
         this.setState({ socket });
-        console.log("socket created")
+        console.log("socket criado")
         socket.emit('setName', this.state.name);
         
         socket.on("joinSuccess", function() {
-            console.log("join successful")
+            console.log("entrada bem sucedida")
             // bind.setState({ isLoading: false });
             bind.setState({ isInRoom: true })
         })
 
         socket.on("joinFailed", function(err) {
-            console.log("join failed, cause: " + err);
+            console.log("entrada falhou, causa: " + err);
             bind.setState({ 
                 errorMsg: err,
                 isError: true,
@@ -60,7 +60,7 @@ export default class JoinGame extends Component {
 
         socket.on('partyUpdate', (players) => {
             this.setState({ players })
-            if(players.length >= 3 && players.map(x => x.isReady).filter(x => x === true).length === players.length) { //TODO CHANGE 2 BACK TO 3
+            if(players.length >= 3 && players.map(x => x.isReady).filter(x => x === true).length === players.length) { //TODO MUDAR 2 DE VOLTA PARA 3
                 this.setState({ canStart: true })
             } else {
                 this.setState({ canStart: false })
@@ -69,26 +69,24 @@ export default class JoinGame extends Component {
 
 
         socket.on('disconnected', function() {
-            console.log("You've lost connection with the server")
+            console.log("Você perdeu a conexão com o servidor")
         });
     }
 
     attemptJoinParty = () => {
 
         if(this.state.name === '') {
-            //TODO  handle error
-            console.log('Please enter a name');
+            console.log('Por favor, digite um nome');
             this.setState({ 
-                errorMsg: 'Please enter a name',
+                errorMsg: 'Por favor, digite um nome',
                 isError: true 
             });
             return
         }
         if(this.state.roomCode === '') {
-            //TODO  handle error
-            console.log('Please enter a room code');
+            console.log('Por favor, digite um código de sala');
             this.setState({ 
-                errorMsg: 'Please enter a room code',
+                errorMsg: 'Por favor, digite um código de sala',
                 isError: true
             });
             return
@@ -100,26 +98,23 @@ export default class JoinGame extends Component {
             .then(function (res) {
                 console.log(res)
                 if(res.data.exists) {
-                    //join 
-                    console.log(`Joining room ${bind.state.roomCode}`)
+                    console.log(`Entrando na sala ${bind.state.roomCode}`)
                     bind.setState({errorMsg: ''})
                     bind.joinParty();
                 } else {
-                    //TODO  handle error
-                    console.log('Invalid Party Code')
+                    console.log('Código de sala inválido')
                     bind.setState({ 
                         isLoading: false,
-                        errorMsg: 'Invalid Party Code',
+                        errorMsg: 'Código de sala inválido',
                         isError: true
                     });
                 }
             })
             .catch(function (err) {
-                //TODO  handle error
-                console.log("error in getting exists", err);
+                console.log("erro ao obter exists", err);
                 bind.setState({ 
                     isLoading: false,
-                    errorMsg: 'Server error',
+                    errorMsg: 'Erro do servidor, sala não encontrada',
                     isError: true
                 });
             })
@@ -143,22 +138,22 @@ export default class JoinGame extends Component {
             error = <b>{this.state.errorMsg}</b>
         }
         if(this.state.isInRoom) {
-            joinReady = <button className="joinButton btn" onClick={this.reportReady} disabled={this.state.isReady}>Ready</button>
+            joinReady = <button className="joinButton btn" onClick={this.reportReady} disabled={this.state.isReady}>Pronto</button>
         } else {
-            joinReady = <button className={`joinButton btn ${this.state.isLoading ? "pulse" : ""}`} onClick={this.attemptJoinParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Joining...': 'Join'}</button>
+            joinReady = <button className={`joinButton btn ${this.state.isLoading ? "pulse" : ""}`} onClick={this.attemptJoinParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Entrando...': 'Entrar'}</button>
         }
         if(this.state.isReady) {
-            ready = <b style={{ color: '#5FC15F' }}>You are ready!</b>
+            ready = <b style={{ color: '#5FC15F', textAlign: 'center'}}>Você está pronto! <br></br>Aguardando o líder da sala iniciar o jogo...</b>
             joinReady = null
         }
 
         return (
             <div className="joinGameContainer">
-                <p>Your Name</p>
+                <p>Seu Nome</p>
                 <input
                     type="text" value={this.state.name} disabled={this.state.isLoading}
                     onChange={e => {
-                        if(e.target.value.length <= 8){
+                        if(e.target.value.length <= 16 && e.target.value.length > 0){
                             this.setState({
                                 errorMsg: '',
                                 isError: false
@@ -166,13 +161,13 @@ export default class JoinGame extends Component {
                             this.onNameChange(e.target.value);
                         } else {
                             this.setState({
-                                errorMsg: 'Name must be less than 9 characters',
+                                errorMsg: 'Nome inválido, máximo de 16 caracteres',
                                 isError: true
                             })
                         }
                     }}
                 />
-                <p>Room Code</p>
+                <p>Código da Sala</p>
                 <input
                     type="text" value={this.state.roomCode} disabled={this.state.isLoading}
                     onChange={e => this.onCodeChange(e.target.value)}
@@ -189,10 +184,10 @@ export default class JoinGame extends Component {
                             let ready = null
                             let readyUnitColor = '#E46258'
                             if(item.isReady) {
-                                ready = <b>Ready!</b>
+                                ready = <b>Pronto!</b>
                                 readyUnitColor = '#73C373'
                             } else {
-                                ready = <b>Not Ready</b>
+                                ready = <b>Pendente!</b>
                             }
                             return (
                                     <div className="readyUnit" style={{backgroundColor: readyUnitColor}} key={index}>

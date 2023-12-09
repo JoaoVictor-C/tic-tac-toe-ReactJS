@@ -60,15 +60,16 @@ openSocket = (gameSocket, room) => {
     let moves = null;
     let turn = null;
     let playersSymbols = null;
+    let firstPlayer = null;
     gameSocket.on('connection', (socket) => {
         console.log('connected: ' + socket.id);
-        players.push({player: '', socket_id: socket.id, isReady: false});
+        players.push({player: '', socket_id: socket.id, isReady: false, totalWins: 0, symbol: ''});
         let index = players.length - 1;
         console.log(players[index]);
 
         const updatePartyList = () => {
             partyMembers = players.map(x => {
-                return {name: x.player, socketID: x.socket_id, isReady: x.isReady}
+                return {name: x.player, socketID: x.socket_id, isReady: x.isReady, totalWins: x.totalWins, symbol: x.symbol}
             }).filter(x => x.name != '')
             console.log(`party members: ${JSON.stringify(partyMembers)}`);
             gameSocket.emit('partyUpdate', partyMembers);
@@ -120,8 +121,6 @@ openSocket = (gameSocket, room) => {
         socket.on('move', (data) => {
             if (data.player === turn && !gameOver) {
                 if (board[data.index] === null) {
-                    console.log(data);
-                    console.log(playersSymbols)
                     if (playersSymbols[0].name === data.player) { 
                         board[data.index] = playersSymbols[0].symbol 
                     } else { 
@@ -170,65 +169,79 @@ openSocket = (gameSocket, room) => {
                 "players": players
             });
         });
+
+        socket.on('restartGame', () => {
+            restart();
+        })
     
         const changeTurn = () => {
-            console.log(turn);
             if (turn === players[0].player) {
-                console.log(`${players[0].player} is now ${players[1].player}`)
                 turn = players[1].player;
             } else {
-                console.log(`${players[1].player} is now ${players[0].player}`)
                 turn = players[0].player;
             }
-            console.log(turn);
         };
     
         const checkWinner = () => {
-            const winningCombos = [
-                [0, 1, 2], // top row
-                [3, 4, 5], // middle row
-                [6, 7, 8], // bottom row
-                [0, 3, 6], // left column
-                [1, 4, 7], // middle column
-                [2, 5, 8], // right column
-                [0, 4, 8], // left diagonal
-                [2, 4, 6] // right diagonal
+            const winningConditions = [
+                [0, 1, 2], //horizontal
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6], //vertical
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8], //diagonal
+                [2, 4, 6]
             ];
     
-            winningCombos.forEach((combo) => {
-                const board1 = board[combo[0]];
-                const board2 = board[combo[1]];
-                const board3 = board[combo[2]];
-    
-                if (board1 && board1 === board2 && board1 === board3) {
-                    winner = board1;
+            winningConditions.forEach((condition) => {
+                if (
+                    board[condition[0]] &&
+                    board[condition[0]] === board[condition[1]] &&
+                    board[condition[1]] === board[condition[2]]
+                ) {
+                    winner = turn;
+                    if (players[0].player === winner) {
+                        players[0].totalWins++;
+                    } else {
+                        players[1].totalWins++;
+                    }
+                    updatePartyList();
                     gameOver = true;
+                    console.log(`${winner} wins!`);
                 }
             });
     
-            if (moves === 9) {
+            if (!board.includes(null) && !winner) {
                 gameOver = true;
-            }
-    
-            if (gameOver) {
-                gameSocket.emit('gameOver', {
-                    "board": board,
-                    "turn": turn,
-                    "winner": winner,
-                    "gameOver": gameOver,
-                    "moves": moves,
-                    "players": players
-                });
+                winner = 'Tie';
+                console.log('Tie!');
             }
         };
     
-        const reset = () => {
+        const restart = () => {
             board = Array(9).fill(null);
-            turn = gameUtils.randomPlayer();
             winner = '';
             gameOver = false;
             moves = 0;
+            if (firstPlayer === players[0].player) {
+                turn = players[1].player;
+            } else {
+                turn = players[0].player;
+            }
+            players.forEach((x, index) => {
+                players[index].symbol = playersSymbols[index].symbol;
+            })
+            gameSocket.emit('gameStart', {
+                "board": board,
+                "turn": turn,
+                "winner": winner,
+                "gameOver": gameOver,
+                "moves": moves,
+                "players": players
+            });
         };
+        
     
         const start = () => {
             board = Array(9).fill(null);
@@ -236,9 +249,16 @@ openSocket = (gameSocket, room) => {
             gameOver = false;
             moves = 0;
             turn = gameUtils.randomPlayer(players.map(x => x.player));
+            firstPlayer = turn;
             playersSymbols = gameUtils.buildPlayersSymbols(players);
-            console.log(turn)
-            console.log(playersSymbols)
+            players.forEach((x, index) => {
+                players[index].symbol = playersSymbols[index].symbol;
+            })
+
+            const leader = players.filter(x => x.socket_id === partyLeader)[0].player;
+            console.log(leader);
+            updatePartyList();
+            console.log(partyLeader)
             gameSocket.emit('gameStart', {
                 "board": board,
                 "turn": turn,
@@ -246,7 +266,8 @@ openSocket = (gameSocket, room) => {
                 "gameOver": gameOver,
                 "moves": moves,
                 "players": players,
-                "playersSymbols": playersSymbols
+                "playersSymbols": playersSymbols,
+                "partyLeader": leader,
             });
         };
         
@@ -268,6 +289,7 @@ openSocket = (gameSocket, room) => {
                     }
                 }
             })
+            players = players.filter(x => x.player != '');
             console.log(Object.keys(gameSocket['sockets']).length)
             updatePartyList();
         })

@@ -5,10 +5,6 @@ import Game from '../components/Game';
 import axios from 'axios';
 const baseUrl = "http://localhost:3000"
 
-// on: join, action, disconnect
-// emit: joined, start, action, disconnected
-// get: createRooms, exists, rooms, users
-
 export default class CreateGame extends Component {
     constructor(props) {
         super(props)
@@ -71,7 +67,7 @@ export default class CreateGame extends Component {
         if(this.state.name === '') {
             //TODO  handle error
             console.log('Please enter a name');
-            this.setState({ errorMsg: 'Please enter a name' });
+            this.setState({ errorMsg: 'Insira seu nome' });
             this.setState({ isError: true });
             return
         }
@@ -90,7 +86,7 @@ export default class CreateGame extends Component {
                 //TODO  handle error
                 console.log("error in creating room", err);
                 bind.setState({ isLoading: false });
-                bind.setState({ errorMsg: 'Error creating room, server is unreachable' });
+                bind.setState({ errorMsg: 'Erro ao criar sala' });
                 bind.setState({ isError: true });
             })
     }
@@ -124,7 +120,7 @@ export default class CreateGame extends Component {
         let createButton = null;
         if(!this.state.isInRoom) {
             createButton = <>
-            <button className={`createButton btn ${this.state.isLoading ? "pulse" : ""}`} onClick={this.createParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Creating...': 'Create'}</button>
+            <button className={`createButton btn ${this.state.isLoading ? "pulse" : ""}`} onClick={this.createParty} disabled={this.state.isLoading}>{this.state.isLoading ? 'Criando...': 'Criar'}</button>
             <br></br>
             </>
         }
@@ -133,24 +129,24 @@ export default class CreateGame extends Component {
         }
         if(this.state.roomCode !== '' && !this.state.isLoading) {
             roomCode = <div className="roomCodeContainer">
-                    <p>ROOM CODE:
+                    <p>Código da sala:
                         <b className="RoomCode btn" onClick={this.copyCode}>{this.state.roomCode} 
                             <span className="iconify" data-icon="typcn-clipboard" data-inline="true"></span>
                         </b>
                     </p>
-                    {this.state.copied ? <p><br></br>Copied to clipboard</p> : null}
+                    {this.state.copied ? <p><br></br>Copiado!</p> : null}
                 </div>
         }
         if(this.state.canStart) {
-            startGame = <button className="startGameButton btn" onClick={this.startGame}>Start Game</button>
+            startGame = <button className="startGameButton btn" onClick={this.startGame}>Iniciar o jogo</button>
         }
         return (
             <div className="createGameContainer">
-                <p>Please enter your name</p>
+                <p>Insira seu nome</p>
                 <input
                     type="text" value={this.state.name} disabled={this.state.isLoading || this.state.isInRoom}
                     onChange={e => {
-                        if(e.target.value.length <= 10){
+                        if(e.target.value.length <= 16 && e.target.value.length > 0 ){
                             this.setState({
                                 errorMsg: '',
                                 isError: false
@@ -158,7 +154,7 @@ export default class CreateGame extends Component {
                             this.onNameChange(e.target.value);
                         } else {
                             this.setState({
-                                errorMsg: 'Name must be less than 11 characters',
+                                errorMsg: 'Nome inválido, máximo de 16 caracteres',
                                 isError: true
                             })
                         }
@@ -178,10 +174,10 @@ export default class CreateGame extends Component {
                             let ready = null
                             let readyUnitColor = '#E46258'
                             if(item.isReady) {
-                                ready = <b>Ready!</b>
+                                ready = <b>Pronto!</b>
                                 readyUnitColor = '#73C373'
                             } else {
-                                ready = <b>Not Ready</b>
+                                ready = <b>Pendente!</b>
                             }
                             return (
                                     <div className="readyUnit" style={{backgroundColor: readyUnitColor}} key={index}>
