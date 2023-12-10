@@ -13,7 +13,7 @@ function App() {
         <div>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/tic-tac-toe-ReactJS//create" element={<CreateGame />} />
+            <Route path="/create" element={<CreateGame />} />
             <Route path="/join" element={<JoinGame />} />
             <Route path="/offline" element={<OfflineGame />} />
           </Routes>
