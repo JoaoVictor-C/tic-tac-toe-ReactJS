@@ -483,4 +483,8 @@ body {
   .playerContainer .symbol {
     font-size: 0.9rem;
   }
+
+  .home h1 {
+    font-size: 2rem;
+  }
 }
