@@ -4,21 +4,21 @@ import CreateGame from './pages/CreateGame'
 import JoinGame from './pages/JoinGame' 
 import OfflineGame from './pages/OfflineGame'
 
-import { HashRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
     <div className="App">
-      <HashRouter>
+      <Router>
         <div>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/create" element={<CreateGame />} />
-            <Route path="/join" element={<JoinGame />} />
-            <Route path="/offline" element={<OfflineGame />} />
+            <Route path="/tic-tac-toe-ReactJS" element={<Home />} />
+            <Route path="/tic-tac-toe-ReactJS/create" element={<CreateGame />} />
+            <Route path="/tic-tac-toe-ReactJS/join" element={<JoinGame />} />
+            <Route path="/tic-tac-toe-ReactJS/offline" element={<OfflineGame />} />
           </Routes>
         </div>
-      </HashRouter>
+      </Router>
     </div>
   )
 }
