@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { Link } from 'react-router-dom';
 import io from "socket.io-client";
 import { ReactSortable } from "react-sortablejs";
 import Game from '../components/Game';
@@ -163,7 +164,7 @@ export default class CreateGame extends Component {
                 />
                 <br></br>
                 {createButton}
-                <a href="/"><button className="backButton btn">Voltar</button></a>
+                <Link to="/" className="backButton btn">Voltar</Link>
                 {error}
                 <br></br>
                 {roomCode}

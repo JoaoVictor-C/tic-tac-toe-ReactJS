@@ -1,5 +1,6 @@
 import '../App.css'
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import Board from '../components/game/board'
 
 
@@ -115,7 +116,7 @@ function App() {
           )}
           <button onClick={restartGame}>Reiniciar jogo</button>
         </div>
-        <a href="../" rel='noopener noreferrer'><button className='Voltar'>Voltar</button></a>
+        <Link to="/" className="backButton btn">Voltar</Link>
     </div>
   )
 }

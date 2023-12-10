@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { Link } from 'react-router-dom';
 import io from "socket.io-client";
 import Game from '../components/Game';
 import axios from 'axios';
@@ -178,7 +179,7 @@ export default class JoinGame extends Component {
                 {ready}
                 <br></br>
                 {error}
-                <a href="/"><button className="backButton btn">Voltar</button></a>
+                <Link to="/" className="backButton btn">Voltar</Link>
                 <div className="readyUnitContainer">
                         {this.state.players.map((item,index) => {
                             let ready = null
