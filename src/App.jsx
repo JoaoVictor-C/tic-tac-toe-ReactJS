@@ -9,13 +9,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 function App() {
   return (
     <div className="App">
-      <Router>
+      <Router basename={import.meta.env.DEV ? '/' : '/tic-tac-toe-ReactJS/'}>
         <div>
           <Routes>
-            <Route path="/tic-tac-toe-ReactJS" element={<Home />} />
-            <Route path="/tic-tac-toe-ReactJS/create" element={<CreateGame />} />
-            <Route path="/tic-tac-toe-ReactJS/join" element={<JoinGame />} />
-            <Route path="/tic-tac-toe-ReactJS/offline" element={<OfflineGame />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/create" element={<CreateGame />} />
+            <Route path="/join" element={<JoinGame />} />
+            <Route path="/offline" element={<OfflineGame />} />
           </Routes>
         </div>
       </Router>
