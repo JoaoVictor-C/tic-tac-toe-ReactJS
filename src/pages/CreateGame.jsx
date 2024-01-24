@@ -4,7 +4,7 @@ import io from "socket.io-client";
 import { ReactSortable } from "react-sortablejs";
 import Game from '../components/Game';
 import axios from 'axios';
-const baseUrl = "https://super-goggles-p4gr5g4q9qpc74wv-3000.app.github.dev"
+const baseUrl = "https://3000-joaovictorc-tictactoere-rkag27l2u55.ws-us107.gitpod.io"
 
 export default class CreateGame extends Component {
     constructor(props) {
