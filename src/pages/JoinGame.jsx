@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import io from "socket.io-client";
 import Game from '../components/Game';
 import axios from 'axios';
-const baseUrl = 'https://super-goggles-p4gr5g4q9qpc74wv-3000.app.github.dev' 
+const baseUrl = 'https://3000-joaovictorc-tictactoere-rkag27l2u55.ws-us107.gitpod.io' 
 
 export default class JoinGame extends Component {
 
