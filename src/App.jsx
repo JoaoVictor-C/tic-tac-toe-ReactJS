@@ -9,7 +9,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 function App() {
   return (
     <div className="App">
-      <Router basename={import.meta.env.DEV ? '/' : '/tic-tac-toe-ReactJS/'}>
+      <Router basename={import.meta.env.DEV ? '/' : '/tic-tac-toeReactJS/'}>
         <div>
           <Routes>
             <Route path="/" element={<Home />} />
