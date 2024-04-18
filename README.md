@@ -49,6 +49,6 @@ The site is available through github pages, but it is not possible to use it to 
 ## Contributors
 
 - [João Victor Corrêa da Silva](https://github.com/JoaoVictor-C)
-- [Ethan Chen](https://github.com/cheneth)
+- [Ethan Chen](https://github.com/cheneth) (code used as inspiration: https://www.chickenkoup.com)
 
 Feel free to contribute to this project by submitting bug reports, feature requests, or pull requests. Enjoy playing Tic Tac Toe!
